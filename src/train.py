@@ -3,6 +3,7 @@ Author: Lijunshi
 Date: 2018-9-30
 """
 
+CUDA_VISIBLE_DEVICES=4
 # set the matplotlib backend so figures can be saved in the background
 import matplotlib
 matplotlib.use("Agg")
@@ -27,12 +28,12 @@ from net.lenet import LeNet
 logging.basicConfig(level=logging.DEBUG)
 
 label_dict = {"正常":0, "不导电":1, "擦花":2, "横条压凹":3, "桔皮":4, "漏底":5, "碰伤":6, "起坑":7, "凸粉":8,
-             "涂层开裂":9, "脏点":10, "其他":11}
+        "涂层开裂":9, "脏点":10, "其他":11}
 
 def args_parse():
     # construct the argument parse and parse the arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-dtest", "--dataset_test", required=True,
+    ap.add_argument("-dtest", "--dataset_test", required=False,
         help="path to input dataset_test")
     ap.add_argument("-dtrain", "--dataset_train", required=True,
         help="path to input dataset_train")
@@ -51,16 +52,22 @@ INIT_LR = 1e-3
 BS = 32
 CLASS_NUM = 12
 norm_size = 256  # image size: 256*256
-
+test_rate = 0.2
 
 def load_data(path):
     print("[INFO] loading images...")
-    data = []
-    labels = []
+    test_data = []
+    test_labels = []
+    train_data = []
+    train_labels = []
     # grab the image paths and randomly shuffle them
     imagePaths = sorted(list(paths.list_images(path)))
     random.seed(42)
     random.shuffle(imagePaths)
+    test_num = int(test_rate * len(imagePaths))
+    logging.info("total image num is %s", len(imagePaths))
+    logging.info("test data num is %s", test_num)
+    count = 0
     # loop over the input images
     for imagePath in imagePaths:
         # load the image, pre-process it, and store it in the data list
@@ -68,23 +75,35 @@ def load_data(path):
         image = cv2.imread(imagePath)
         image = cv2.resize(image, (norm_size, norm_size))
         image = img_to_array(image)
-        data.append(image)
+        # data.append(image)
 
         # extract the class label from the image path and update the
         # labels list
         label_name = imagePath.split(os.path.sep)[-1].split(".")[0].split("2018")[0]
         logging.debug("label name is %s", label_name)
-        label = int(label_dict[label_name])
+        try:
+            label = int(label_dict[label_name])
+        except:
+            label = 11
         logging.debug("label is %s", label)
-        labels.append(label)
+        if(count < test_num):
+            test_data.append(image)
+            test_labels.append(label)
+        else:
+            train_data.append(image)
+            train_labels.append(label)
+        count += 1;
     
     # scale the raw pixel intensities to the range [0, 1]
-    data = np.array(data, dtype="float") / 255.0
-    labels = np.array(labels)
+    test_data = np.array(test_data, dtype="float") / 255.0
+    train_data = np.array(train_data, dtype="float") / 255.0
+    test_labels = np.array(test_labels)
+    trian_labels = np.array(train_labels)
 
     # convert the labels from integers to vectors
-    labels = to_categorical(labels, num_classes=CLASS_NUM)                         
-    return data, labels
+    test_labels = to_categorical(test_labels, num_classes=CLASS_NUM)                         
+    train_labels = to_categorical(train_labels, num_classes=CLASS_NUM)
+    return test_data, test_labels, train_data, train_labels
     
 
 def train(aug, trainX, trainY, testX, testY, args):
@@ -124,9 +143,9 @@ def train(aug, trainX, trainY, testX, testY, args):
 if __name__=='__main__':
     args = args_parse()
     train_file_path = args["dataset_train"]
-    test_file_path = args["dataset_test"]
-    trainX,trainY = load_data(train_file_path)
-    testX,testY = load_data(test_file_path)
+    # test_file_path = args["dataset_test"]
+    testX, testY, trainX, trainY = load_data(train_file_path)
+    # testX,testY = load_data(test_file_path)
     # construct the image generator for data augmentation
     aug = ImageDataGenerator(rotation_range=30, width_shift_range=0.1,
                              height_shift_range=0.1, shear_range=0.2, zoom_range=0.2,
