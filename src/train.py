@@ -3,7 +3,6 @@ Author: Lijunshi
 Date: 2018-9-30
 """
 
-CUDA_VISIBLE_DEVICES=4
 # set the matplotlib backend so figures can be saved in the background
 import matplotlib
 matplotlib.use("Agg")
@@ -24,6 +23,8 @@ import os
 import sys
 import logging
 from net.lenet import LeNet
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -47,11 +48,11 @@ def args_parse():
 
 # initialize the number of epochs to train for, initial learning rate,
 # and batch size
-EPOCHS = 500
+EPOCHS = 100
 INIT_LR = 1e-3
-BS = 32
+BS = 64
 CLASS_NUM = 12
-norm_size = 256  # image size: 256*256
+norm_size = 64  # image size: 256*256
 test_rate = 0.2
 
 def load_data(path):
@@ -138,8 +139,7 @@ def train(aug, trainX, trainY, testX, testY, args):
     plt.savefig(args["plot"])
     
 
-
-# python train.py --dataset_train ../../traffic-sign/train --dataset_test .../tianchi/test --model tianchi.model
+# python train.py --dataset_train /home/ljs/tianchi2018/data_all1 --model lenet_100.model
 if __name__=='__main__':
     args = args_parse()
     train_file_path = args["dataset_train"]
