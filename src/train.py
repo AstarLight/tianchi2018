@@ -50,7 +50,7 @@ def args_parse():
 # and batch size
 EPOCHS = 100
 INIT_LR = 1e-3
-BS = 64
+BS = 128
 CLASS_NUM = 12
 norm_size = 64  # image size: 256*256
 test_rate = 0.2
