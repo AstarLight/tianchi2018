@@ -22,9 +22,9 @@ import cv2
 import os
 import sys
 import logging
-from net.lenet import LeNet
+from net.mynet import MyNet
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -48,11 +48,11 @@ def args_parse():
 
 # initialize the number of epochs to train for, initial learning rate,
 # and batch size
-EPOCHS = 100
+EPOCHS = 120
 INIT_LR = 1e-3
-BS = 128
+BS = 64
 CLASS_NUM = 12
-norm_size = 64  # image size: 256*256
+norm_size = 128  # image size: 256*256
 test_rate = 0.2
 
 def load_data(path):
@@ -110,7 +110,7 @@ def load_data(path):
 def train(aug, trainX, trainY, testX, testY, args):
     # initialize the model
     print("[INFO] compiling model...")
-    model = LeNet.build(width=norm_size, height=norm_size, depth=3, classes=CLASS_NUM)
+    model = MyNet.build(width=norm_size, height=norm_size, depth=3, classes=CLASS_NUM)
     opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
     model.compile(loss="categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 

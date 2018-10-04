@@ -14,10 +14,10 @@ import cv2
 import os
 import logging
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 logging.basicConfig(level=logging.DEBUG)
 
-norm_size = 64
+norm_size = 128
 
 def args_parse():
 # construct the argument parse and parse the arguments
